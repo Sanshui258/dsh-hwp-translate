@@ -1,7 +1,7 @@
 {
   "name": "dsh-hwp-translate",
   "version": "0.1.0",
-  "description": "HWP/한글 公文翻译：调用本机 Yeobaek Translator，保留原格式写回（Windows + 한글 COM）",
+  "description": "Translate HWP/HWPX (한글) documents into Chinese with layout preserved. Ships the 14 MB Yeobaek translator, so no separate install is needed.",
   "type": "module",
   "main": "lib/index.js",
   "bin": {
@@ -14,7 +14,8 @@
     "icon.png",
     "cordis.patch.yml",
     "README.md",
-    "PROVENANCE.md"
+    "PROVENANCE.md",
+    ".env.example"
   ],
   "keywords": [
     "dsh",
@@ -24,7 +25,8 @@
     "hwpx",
     "hangul",
     "한글",
-    "translation"
+    "translation",
+    "korean"
   ],
   "engines": {
     "dsh": ">=0.1.0-rc.6"

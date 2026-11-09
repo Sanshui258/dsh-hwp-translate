@@ -1,40 +1,54 @@
-# HWP/한글 翻译插件（DSH 市场包）—— 骨架
+# dsh-hwp-translate
 
-> 这是**待发布的独立仓库**，不放进主仓库的构建产物里。
-> 主仓库继续持有 HWP 翻译逻辑（Python），这里只是"DSH 适配层"。
+DSH 工具插件：把 `.hwp` / `.hwpx`（한글）文档翻成中文，**保留表格、项目符号与缩进**。
+注册一个工具 `hwp_translate`，返回输出文件路径。
 
-## 为什么单独一个仓库
+翻译器随插件一起分发（`bin/HWP_Translator.exe`，14 MB，单文件），**不需要另外安装 Yeobaek**。
 
-1. 市场条目 = **一个 npm 包或 git 仓库**，一个仓库对应一个插件；
-2. 主仓库是 Python 桌面程序（73 MB 运行时），不适合作为插件包；
-3. 独立仓库可以用 `dsh plugin --profile web add link:<path>` 本地联调，不影响主线发版。
+## 前置
 
-## 文件
+- **Windows**（写回用 COM；macOS/Linux 不支持）；
+- **API Key**：`AI_API_KEY` 与 `AI_BASE_URL`（环境变量，或 exe 同目录的 `.env`）；
+- 翻译**旧版 `.hwp`** 还需要本机装 한글(HWP)；`.hwpx` 不需要。
 
-| 文件 | 作用 |
-|---|---|
-| `package.json` | 插件清单：`dsh.bundle.patch` 指向 `cordis.patch.yml` |
-| `cordis.patch.yml` | 加载声明（`insert: [{id, name}]`） |
-| `lib/index.js` | 适配层：注册工具 → 调用本机 `PPT_Translator_CLI.exe` |
-| `icon.png` | 市场列表图标（从 `assets/icon/yeobaek_mark.png` 复制） |
-| `README.md` | 安装/使用/已知限制 |
-| `PROVENANCE.md` | 来源说明（市场惯例：说明代码出处与构建方式） |
+## 安装
 
-## 发布步骤
+在 DSH 的插件安装界面里安装，或：
 
-1. 在 GitHub 建空仓库 `dsh-hwp-translate`（公开，MIT）；
-2. 提交本目录内容，打 tag `v0.1.0`；
-3. 市场索引用 **commit 哈希**固定：`git+https://github.com/<你>/dsh-hwp-translate.git#<commit>`；
-4. 用户侧：DSH 设置 → 市场 → 添加索引 URL（这份 `index.json` 的 raw 地址）；
-5. 升级：改代码 → 新 tag → 更新 index 的版本/commit。
-
-## 本地联调（不用发布）
-
-```powershell
-dsh plugin --profile web add link:C:\path\to\dsh-hwp-translate
+```sh
+dsh plugin --profile web add github:Sanshui258/dsh-hwp-translate
 ```
 
-## 前提（尚未完成）
+## 工具
 
-- 主仓库要有 **X1 接口**：`PPT_Translator_CLI.exe --extract-json` / `--apply-json`；
-- 插件要么要求用户先装 Yeobaek 桌面版，要么首次运行时从 Releases 下载 zip（体积大，建议前者）。
+`hwp_translate(path, target?, out_dir?)` → `{ ok, input, output, summary }`
+
+| 参数 | 说明 |
+|---|---|
+| `path` | `.hwp` / `.hwpx` 的绝对路径 |
+| `target` | 目标语言，默认 `zh-CN` |
+| `out_dir` | 输出目录，默认与原文件同目录 |
+
+输出文件名：`原名_zh.后缀`。
+
+## 配置 API Key
+
+两种方式，任选其一：
+
+1. 环境变量（推荐）：在系统环境变量里设置 `AI_API_KEY`、`AI_BASE_URL`、`AI_MODEL`；
+2. 把 `.env` 放在 `bin/HWP_Translator.exe` 旁边（可从仓库的 `.env.example` 复制）。
+
+> 不要填智谱、Kimi 等「编程套餐（coding plan）」的地址：那些套餐只允许官方工具调用。
+
+## 已知限制
+
+- 仅 Windows；`.hwp` 需要本机 한글，`.hwpx` 纯 Python 读写；
+- 只翻译 HWP/HWPX（PPT/PDF/Word 请用完整版 Yeobaek Translator）；
+- 没有进度流：大文件会等几十秒到几分钟，工具只返回最终结果；
+- 许可证：本插件 MIT；随包翻译器为个人非商业使用许可。
+
+## 卸载
+
+```sh
+dsh plugin --profile web remove dsh-hwp-translate
+```
