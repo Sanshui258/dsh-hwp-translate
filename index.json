@@ -49,8 +49,8 @@
         "zh": "HWP / 한글 文档翻译"
       },
       "description": {
-        "en": "Translates a .hwp or .hwpx (Hangul) document into Chinese and keeps tables, bullets and indentation. Ships its own 14 MB translator, so only an API key is needed. Windows only; legacy .hwp additionally needs Hangul.",
-        "zh": "把 .hwp/.hwpx（한글）文档翻成中文，保留表格、项目符号与缩进；翻译器随包分发（14 MB），只需配置 API Key。仅 Windows；旧版 .hwp 还需要本机 한글。"
+        "en": "Translates .hwp/.hwpx (Hangul) documents into Chinese with layout preserved. No API key: the session model translates, the plugin only extracts and writes back.",
+        "zh": "把 .hwp/.hwpx（한글）文档翻成中文并保留原格式。不需要 API Key：由会话模型翻译，插件只负责抽取与写回。"
       },
       "icon": "icon.png",
       "repository": {
@@ -63,17 +63,17 @@
           "windows"
         ],
         "sortKeys": {
-          "updated": 1794233156
+          "updated": 1794233430
         }
       },
       "versions": [
         {
-          "version": "0.2.0",
-          "publishTimestamp": 1794233156,
+          "version": "0.3.0",
+          "publishTimestamp": 1794233430,
           "source": {
             "type": "git",
             "url": "https://github.com/Sanshui258/dsh-hwp-translate.git",
-            "commit": "195a837c95d15584ea8b2f457536ac7c607eece5"
+            "commit": "f04001564140075ce1513f06b37710b78a1f50aa"
           }
         }
       ]
