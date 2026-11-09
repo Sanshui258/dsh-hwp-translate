@@ -52,3 +52,24 @@ dsh plugin --profile web add github:Sanshui258/dsh-hwp-translate
 ```sh
 dsh plugin --profile web remove dsh-hwp-translate
 ```
+
+## 离线两步模式（X1）
+
+不需要任何 API Key：先抽段落，交给调用方的模型翻好，再写回。
+
+```sh
+# 1) 抽取（不联网）
+HWP_Translator.exe --file 文档.hwpx --extract-json segments.json
+
+# 2) 写回（不联网）
+HWP_Translator.exe --file 文档.hwpx --apply-json translations.json --output-dir out
+```
+
+`segments.json` 形如：
+
+```json
+{"version": 1, "segments": [{"id": "4", "text": "교수님 성함"}]}
+```
+
+写回时交回 `{id: 译文}`（也可以包一层 `{"translations": {...}}`）；
+没交回的条目会在返回值的 `missing` 里列出。
