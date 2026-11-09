@@ -1,0 +1,82 @@
+{
+  "format": 1,
+  "title": {
+    "en": "Yeobaek HWP",
+    "zh": "余白 HWP"
+  },
+  "description": {
+    "en": "Translate HWP/HWPX (Hangul) documents into Chinese with the original layout preserved; the agent calls a 14 MB local tool instead of loading a full office suite.",
+    "zh": "把 HWP/HWPX（한글）文档翻成中文并保留原格式；agent 调用的是 14 MB 的本地专用工具，不加载整套办公组件。"
+  },
+  "metadata": {
+    "categories": {
+      "tools": {
+        "title": {
+          "en": "Tools",
+          "zh": "工具"
+        }
+      }
+    },
+    "labels": {
+      "hangul": {
+        "title": {
+          "en": "Hangul / HWP",
+          "zh": "한글 / HWP"
+        }
+      },
+      "windows": {
+        "title": {
+          "en": "Windows only",
+          "zh": "仅 Windows"
+        }
+      }
+    },
+    "sortKeys": {
+      "updated": {
+        "title": {
+          "en": "Updated",
+          "zh": "更新时间"
+        },
+        "order": "desc"
+      }
+    }
+  },
+  "plugins": [
+    {
+      "name": "dsh-hwp-translate",
+      "title": {
+        "en": "HWP / Hangul Translator",
+        "zh": "HWP / 한글 文档翻译"
+      },
+      "description": {
+        "en": "Translate a .hwp/.hwpx document into Chinese while keeping tables, bullets and indentation; registers one tool, hwp_translate, and returns the output path. Windows only; .hwp needs Hangul installed, .hwpx does not.",
+        "zh": "把 .hwp/.hwpx 文档翻成中文，保留表格、项目符号与缩进；注册一个 hwp_translate 工具并返回输出路径。仅 Windows；.hwp 需要本机 한글，.hwpx 不需要。"
+      },
+      "icon": "icon.png",
+      "repository": {
+        "url": "https://github.com/Sanshui258/dsh-hwp-translate.git"
+      },
+      "metadata": {
+        "category": "tools",
+        "labels": [
+          "hangul",
+          "windows"
+        ],
+        "sortKeys": {
+          "updated": 1794931200
+        }
+      },
+      "versions": [
+        {
+          "version": "0.1.0",
+          "publishTimestamp": 1794931200,
+          "source": {
+            "type": "git",
+            "url": "https://github.com/Sanshui258/dsh-hwp-translate.git",
+            "commit": "ddbedb754e5638015f03382c375ff06142bd4dec"
+          }
+        }
+      ]
+    }
+  ]
+}
