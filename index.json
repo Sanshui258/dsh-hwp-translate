@@ -73,7 +73,7 @@
           "source": {
             "type": "git",
             "url": "https://github.com/Sanshui258/dsh-hwp-translate.git",
-            "commit": "690a5d1"
+            "commit": "690a5d180cfcbc247d740bf0dd949c41a5275ccd"
           }
         }
       ]
