@@ -1,0 +1,15 @@
+# dsh-hwp-translate —— DSH bundle patch
+#
+# 这个文件是插件的「挂载声明」：DSH 启动时按 bundle 层叠加各插件的 patch，
+# 把本插件插入当前 profile 的配置树。
+#
+# 安装方式：
+#   dsh plugin --profile web add dsh-hwp-translate
+# 或本地开发：
+#   dsh plugin --profile web add link:<本目录绝对路径>
+# 或固定到某个 git commit（市场索引用这种）：
+#   dsh plugin --profile web add git+https://github.com/Sanshui258/dsh-hwp-translate.git#<commit>
+
+- insert:
+    - id: dsh-hwp-translate
+      name: dsh-hwp-translate
