@@ -1,11 +1,12 @@
 ---
 name: yeobaek-hwp
-description: 把韩文/英文的 HWP、HWPX（한글）文档翻成简体中文，保留原格式原地替换。当用户要求翻译 .hwp/.hwpx 文档、或提到 한글/Hangul/韩国公文/공문 时使用。
-version: 0.1.0
+description: 把韩文/英文的 HWP、HWPX（한글）文档翻成简体中文，保留原格式。当用户要求翻译 .hwp/.hwpx 文档，或提到 한글/Hangul/韩国公文/공문 时使用。翻译由你（当前模型）完成，不需要用户配任何 API Key。
+version: 0.3.0
 license: MIT
-homepage: https://github.com/Sanshui258/PPT-Translator
+homepage: https://github.com/Sanshui258/dsh-hwp-translate
 tools:
-  - hwp_translate
+  - hwp_extract
+  - hwp_apply
 ---
 
 # Yeobaek HWP Translator
@@ -15,83 +16,45 @@ tools:
 **用**：
 - 用户给了一个 `.hwp` / `.hwpx` 文件，说要翻译、看懂、或做成中文版；
 - 用户提到「한글 文档」「韩国公文」「HWP」「HWPX」「行政文书」；
-- 需要**保留排版**的双语/中文文档（表格、项目符号、字号、缩进都不变）。
+- 需要**保留排版**的中文文档（表格、项目符号、字号、缩进都不变）。
 
 **不用**：
 - `.pptx` / `.pdf` / `.docx` → 用 `yeobaek-office`（另一条产品线）；
-- 用户只想翻一句话或一段选中的文字 → 直接翻，不用文档工具；
-- 用户要的是「提取文字给我看」而不是生成文件 → 读文件即可。
+- 只想翻一句话或选中的文字 → 直接翻，不用文档工具；
+- 只要提取文字 → 可以用 `hwp_extract`，但不要写回。
 
-## 调用方式
+## 工作流程（三步，全部本地）
 
-优先用工具（插件已注册时）：
-
-```json
-{"tool": "hwp_translate", "path": "D:\\资料\\행정절차.hwp", "target": "zh-CN"}
+```
+1) hwp_extract(path)               → {"total":4,"segments":[{"id":"1","text":"전공체험 진행사진"}...]}
+2) 你自己把每个 text 翻成目标语言     ← 用当前会话的模型，不需要额外 Key
+3) hwp_apply(path, translations)   → {"ok":true,"output":"..._zh.hwpx","applied":4,"missing":[]}
 ```
 
-没有插件、但有命令行时（Windows）：
+**注意**：
+- `translations` 必须是 `{"id": "译文"}`，id 原样带回，不要自己编号；
+- 长文档分页：`hwp_extract` 返回 `next_offset` 不为空时，用 `offset` 继续取；
+- 只有抽到的段落需要翻译；`hwp_apply` 返回的 `missing` 列出没交回的 id。
 
-```powershell
-HWP_Translator.exe --file "D:\资料\행정절차.hwp" --target-lang zh-CN --json
-```
+## 翻译要求
 
-返回（`--json` 时，stdout 只有一行 JSON）：
+- 保留原文的标点与换行意图；表格单元格要短、名词化；
+- 韩文里的「※」「○」「-」等符号保留；
+- 数字、日期、人名、机构名照抄不译，除非用户要求；
+- 同一术语全文统一（"전공" → "专业"，"학과" → "学科"）。
 
-```json
-{"ok": true, "input": "D:\\资料\\행정절차.hwp", "output": "D:\\资料\\행정절차_zh.hwp", "status": "ok", "translated": 128, "error": ""}
-```
+## 失败怎么处理
 
-失败时：
-
-```json
-{"ok": false, "error": "找不到 한글(HWP) 程序：写回 .hwp 需要本机安装 한글"}
-```
-
-## 参数
-
-| 参数 | 必填 | 说明 |
-|---|---|---|
-| `file` / `path` | 是 | 输入文件绝对路径，支持 `.hwp`、`.hwpx` |
-| `--target-lang` | 否 | 目标语言，默认 `zh-CN` |
-| `--output-dir` | 否 | 输出目录；默认与原文件同目录 |
-| `--mock` | 否 | 不联网，用原文占位，只验证链路 |
-| `--force` | 否 | 忽略缓存重新翻译 |
-
-输出文件名规则：`原文件名_zh.hwpx`（语言前缀取目标语言的主语言，如 `zh-CN` → `zh`）。
-
-## 前置条件（先检查，再调用）
-
-1. **Windows**：HWP 写回依赖 한글(HWP) COM，macOS/Linux 不支持；
-2. **`.hwp` 需要本机装 한글**：旧二进制格式要先转 `.hwpx` 才能改；`.hwpx` 不需要；
-3. **API Key**：真实翻译要 `.env` 里的 `AI_API_KEY` / `AI_BASE_URL`（或环境变量）；
-4. 找不到工具时先看 `YEOBAEK_CLI` 环境变量是否指向 `HWP_Translator.exe`。
-
-## 错误 → 下一步
-
-| 错误文本 | 含义 | 你该做什么 |
-|---|---|---|
-| `没找到 Yeobaek CLI` | 没装或没配环境变量 | 让用户安装 HWP_Translator，或设置 `YEOBAEK_CLI` |
-| `找不到 한글(HWP) 程序` | 本机没装 한글 | 建议用户装 한글，或改用 `.hwpx` |
-| `401` / `invalid api key` | Key 不对 | 请用户检查 `.env`，不要重试 |
-| `429` / `rate limit` | 限流 | 调小 `MAX_CONCURRENCY`，或换 Key |
-| `timeout` | 网络/单批过大 | 直接重跑（已完成句子有缓存，不重复扣费） |
-| `文件不存在` | 路径错 | 向用户确认路径，不要猜 |
-
-## 处理较大文件
-
-- 一份 20 页公文通常 10–60 秒；超过 2 分钟先告诉用户在跑，别重复调用；
-- 同一文件重复调用会命中缓存，第二次很快；
-- 批量：一次一个文件调用，串行更稳；不要把多个文件塞进一次调用。
+| 现象 | 处理 |
+|---|---|
+| `没找到 HWP 翻译器` | 插件包不完整：让用户重装插件，或设 `YEOBAEK_CLI` |
+| `文件不存在` | 向用户确认路径，不要猜 |
+| `applied: 0` | 可能是 id 对不上：重新 `hwp_extract` 再翻 |
+| `.hwp` 转换失败 | 旧版二进制需要本机 한글；建议用户另存为 `.hwpx` |
 
 ## 不要做的事
 
-- 不要为了"看看效果"先跑 `--force`（会清掉缓存、重复计费）；
-- 不要修改用户原文件——工具只读输入、写新文件；
-- 不要声称"已翻译"除非返回 JSON 里 `ok: true` 且 `output` 指向的文件存在；
-- 不要在 `.pptx` 上调用本工具（会直接报"只支持 .hwp/.hwpx"）。
-
-## 术语一致性（可选）
-
-用户有课程/项目术语表时，把分组名写进 `.env` 的 `GLOSSARY_GROUP=课程A`，
-工具会自动只注入本批出现的术语，命中术语的句子改一条只重翻相关句。
+- 不要调用 `hwp_translate`（旧接口，需要用户自己的 API Key）——优先 `hwp_extract` + `hwp_apply`；
+- 不要修改用户原文件：`hwp_apply` 只写 `*_zh` 新文件；
+- 不要声称"已翻译"除非 `hwp_apply` 返回 `ok: true` 且 `output` 存在；
+- 不要在 `.pptx` / `.pdf` 上调用本工具。
