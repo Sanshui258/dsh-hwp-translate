@@ -3,7 +3,7 @@
 DSH 工具插件：把 `.hwp` / `.hwpx`（한글）文档翻成中文，**保留表格、项目符号与缩进**。
 注册一个工具 `hwp_translate`，返回输出文件路径。
 
-翻译器随插件一起分发（`bin/HWP_Translator.exe`，14 MB，单文件），**不需要另外安装 Yeobaek**。
+翻译器随插件一起分发（`bin/HWP_Translator.exe`，16.8 MB，单文件），**不需要另外安装 Yeobaek**。
 
 ## 前置
 
