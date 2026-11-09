@@ -63,17 +63,17 @@
           "windows"
         ],
         "sortKeys": {
-          "updated": 1794232773
+          "updated": 1794233156
         }
       },
       "versions": [
         {
-          "version": "0.1.1",
-          "publishTimestamp": 1794232773,
+          "version": "0.2.0",
+          "publishTimestamp": 1794233156,
           "source": {
             "type": "git",
             "url": "https://github.com/Sanshui258/dsh-hwp-translate.git",
-            "commit": "b608ecb00a4484ef3b11646ea03349f7b322d06f"
+            "commit": "195a837c95d15584ea8b2f457536ac7c607eece5"
           }
         }
       ]
