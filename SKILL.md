@@ -1,7 +1,7 @@
 ---
 name: yeobaek-hwp
 description: 把韩文/英文的 HWP、HWPX（한글）文档翻成简体中文，保留原格式。当用户要求翻译 .hwp/.hwpx 文档，或提到 한글/Hangul/韩国公文/공문 时使用。翻译由你（当前模型）完成，不需要用户配任何 API Key。
-version: 0.4.0
+version: 0.4.2
 license: MIT
 homepage: https://github.com/Sanshui258/dsh-hwp-translate
 tools:
@@ -35,6 +35,17 @@ tools:
 - `translations` 必须是 `{"id": "译文"}`，id 原样带回，不要自己编号；
 - 长文档分页：`hwp_extract` 返回 `next_offset` 不为空时，用 `offset` 继续取；
 - 只有抽到的段落需要翻译；`hwp_apply` 返回的 `missing` 列出没交回的 id。
+
+## 语言方向
+
+不限制方向：文档是什么语言就抽什么，译文是什么语言由**用户的要求**决定（中文只是默认示例）。
+带 `target_language`（`zh-CN` / `en` / `ko` …）只是为了把意图回显，不影响读写。
+
+- 用户说"翻成中文" → 译文写中文；
+- 用户说"翻成英文" → 译文写英文，流程完全一样；
+- 用户说"中韩对照" → 把原文与译文一起交回 `hwp_apply` 也可以。
+
+不要因为文档是韩文就假定要翻成中文——先看用户要什么。
 
 ## 翻译要求
 
