@@ -56,6 +56,19 @@ HWP_Translator.exe --file 文档.hwpx --apply-json translations.json --output-di
 
 ## 权限与 한글
 
+### 한글 安全对话框
+
+`.hwp` 触发本机 한글 时，会弹出「파일 접근」安全提示：
+
+```
+[접근 허용(Y)]  [모두 허용(N)]  [허용 안 함(A)]  [모두 안 함(C)]
+```
+
+请点**第二个「모두 허용」（N）**：只点第一个的话，每个文件都会再弹一次；
+点后两个会直接失败。如果 120 秒内没点，本次转换会被终止（`HANGUL_DIALOG_TIMEOUT`）。
+
+工具成功时会在返回里带 `notice` 提醒这一点。
+
 `.hwp`（旧二进制）需要启动本机 한글 并通过 COM 打开文档。这是「操作外部程序」，
 不是纯文件读写，所以：
 
@@ -68,5 +81,5 @@ HWP_Translator.exe --file 文档.hwpx --apply-json translations.json --output-di
 
 失败时返回 `{"ok": false, "code": "...", "hint": "...", "error": "..."}`：
 
-`HANGUL_REQUIRED`（缺 한글）、`CONVERT_TIMEOUT`（转换超 120s）、
+`HANGUL_REQUIRED`（缺 한글）、`HANGUL_DIALOG_TIMEOUT`（安全框没人点）、`CONVERT_TIMEOUT`（转换超 120s）、
 `UNSUPPORTED_FORMAT`、`NOT_FOUND`、`BAD_MAP`、`EXTRACT_FAILED`、`APPLY_FAILED`。
