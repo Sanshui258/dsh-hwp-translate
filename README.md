@@ -54,6 +54,16 @@ HWP_Translator.exe --file 文档.hwpx --apply-json translations.json --output-di
 - 旧接口 `hwp_translate` 仍需用户自己的 API Key，仅为兼容保留；
 - 许可证：本插件 MIT；随包翻译器为个人非商业使用许可。
 
+## 权限与 한글
+
+`.hwp`（旧二进制）需要启动本机 한글 并通过 COM 打开文档。这是「操作外部程序」，
+不是纯文件读写，所以：
+
+- 工具调用需要显式 `allow_hangul: true`（agent 会先向你确认）；
+- 未授权时返回 `HANGUL_PERMISSION_REQUIRED`，不会自行启动 한글；
+- 한글 首次可能弹出「允许外部程序访问」，请选择允许；
+- 不想给这个权限：把文件另存为 `.hwpx`，纯 Python 读写，无需 한글。
+
 ## 错误码
 
 失败时返回 `{"ok": false, "code": "...", "hint": "...", "error": "..."}`：

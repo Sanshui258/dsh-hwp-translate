@@ -1,7 +1,7 @@
 ---
 name: yeobaek-hwp
 description: 把韩文/英文的 HWP、HWPX（한글）文档翻成简体中文，保留原格式。当用户要求翻译 .hwp/.hwpx 文档，或提到 한글/Hangul/韩国公文/공문 时使用。翻译由你（当前模型）完成，不需要用户配任何 API Key。
-version: 0.3.1
+version: 0.3.2
 license: MIT
 homepage: https://github.com/Sanshui258/dsh-hwp-translate
 tools:
@@ -60,6 +60,20 @@ tools:
 - 不要声称"已翻译"除非 `hwp_apply` 返回 `ok: true` 且 `output` 存在；
 - 不要在 `.pptx` / `.pdf` 上调用本工具。
 
+## 权限：操作 한글 前必须先问用户
+
+`.hwp`（旧二进制）需要启动**本机 한글(Hangul)** 并通过 COM 打开文档——这属于
+「操作外部程序」，不是纯文件读写。所以：
+
+1. 收到 `.hwp` 时，**先用一句话向用户确认**：会启动本机 한글 转换文档，可能需要
+   在弹出的「允许外部程序访问」对话框里点允许；
+2. 用户同意后，调用 `hwp_extract` / `hwp_apply` 时带 `allow_hangul: true`；
+3. 不带这个参数时工具会返回 `HANGUL_PERMISSION_REQUIRED`——**不要**自己重试，
+   先回去问用户；
+4. 用户拒绝或本机没有 한글：请用户另存为 `.hwpx`，再走普通流程（无需任何权限）。
+
+`.hwpx` / `.docx` 不需要这个参数，也不需要 한글。
+
 ## 格式支持与错误码
 
 | 输入 | 处理方式 | 需要 |
@@ -72,7 +86,8 @@ tools:
 
 | code | 含义 | 你要做什么 |
 |---|---|---|
-| `HANGUL_REQUIRED` | 处理 `.hwp` 但没有 본机 한글 | 告诉用户装 한글，或让他另存为 `.hwpx` |
+| `HANGUL_PERMISSION_REQUIRED` | 还没得到用户同意就处理 `.hwp` | **先问用户**，同意后带 `allow_hangul: true` 重试 |
+| `HANGUL_REQUIRED` | 处理 `.hwp` 但没有本机 한글 | 告诉用户装 한글，或让他另存为 `.hwpx` |
 | `CONVERT_TIMEOUT` | 한글 转换超过 120 秒 | 请用户先用 한글 打开一次确认能打开 |
 | `UNSUPPORTED_FORMAT` | 不是 .hwp/.hwpx/.docx | 换文件，或另存为 .hwpx |
 | `NOT_FOUND` | 路径不存在 | 向用户确认路径 |
