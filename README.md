@@ -8,8 +8,8 @@ DSH 插件：把 `.hwp` / `.hwpx`（한글）文档翻成中文，**保留表格
 
 | 工具 | 作用 | 联网 |
 |---|---|---|
-| `hwp_extract(path, offset?, limit?)` | 抽取待翻段落（id + 原文） | 否 |
-| `hwp_apply(path, translations, out_dir?)` | 把 `{id: 译文}` 写回文档 | 否 |
+| `hwp_extract(path, offset?, limit?)` | 抽取待翻段落（id + 原文）；`.hwp` 自动转 `.hwpx` | 否 |
+| `hwp_apply(path, translations, out_dir?)` | 把 `{id: 译文}` 写回；`.hwp` 进则 `.hwp` 出 | 否 |
 | `hwp_translate(path, target?, out_dir?)` | 旧接口：让 exe 自己调 API（需自带 Key） | 是 |
 
 ## 典型用法（模型自动完成）
@@ -28,7 +28,8 @@ DSH 插件：把 `.hwp` / `.hwpx`（한글）文档翻成中文，**保留表格
 ## 前置
 
 - **Windows**；
-- 翻译**旧版 `.hwp`** 还需要本机 한글(HWP)（写回走 COM）；`.hwpx` 不需要；
+- `.hwpx` / `.docx` 纯 Python，直接可用；
+- 旧版 `.hwp` 需要本机 한글(HWP)：工具会自动转 `.hwpx`、写完再转回 `.hwp`；没有 한글 返回 `HANGUL_REQUIRED`；
 - 不需要 API Key、不需要另装 Yeobaek——翻译器随包分发（`bin/HWP_Translator.exe`，16.8 MB）。
 
 ## 安装
@@ -52,3 +53,10 @@ HWP_Translator.exe --file 文档.hwpx --apply-json translations.json --output-di
 - 长文档要分页抽取（每页默认 50 段）；
 - 旧接口 `hwp_translate` 仍需用户自己的 API Key，仅为兼容保留；
 - 许可证：本插件 MIT；随包翻译器为个人非商业使用许可。
+
+## 错误码
+
+失败时返回 `{"ok": false, "code": "...", "hint": "...", "error": "..."}`：
+
+`HANGUL_REQUIRED`（缺 한글）、`CONVERT_TIMEOUT`（转换超 120s）、
+`UNSUPPORTED_FORMAT`、`NOT_FOUND`、`BAD_MAP`、`EXTRACT_FAILED`、`APPLY_FAILED`。

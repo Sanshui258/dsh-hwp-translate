@@ -1,7 +1,7 @@
 ---
 name: yeobaek-hwp
 description: 把韩文/英文的 HWP、HWPX（한글）文档翻成简体中文，保留原格式。当用户要求翻译 .hwp/.hwpx 文档，或提到 한글/Hangul/韩国公文/공문 时使用。翻译由你（当前模型）完成，不需要用户配任何 API Key。
-version: 0.3.0
+version: 0.3.1
 license: MIT
 homepage: https://github.com/Sanshui258/dsh-hwp-translate
 tools:
@@ -56,5 +56,25 @@ tools:
 
 - 不要调用 `hwp_translate`（旧接口，需要用户自己的 API Key）——优先 `hwp_extract` + `hwp_apply`；
 - 不要修改用户原文件：`hwp_apply` 只写 `*_zh` 新文件；
+- `.hwp` 会自动转换，需要本机 한글；没有 한글 时返回 `HANGUL_REQUIRED`，不要重试；
 - 不要声称"已翻译"除非 `hwp_apply` 返回 `ok: true` 且 `output` 存在；
 - 不要在 `.pptx` / `.pdf` 上调用本工具。
+
+## 格式支持与错误码
+
+| 输入 | 处理方式 | 需要 |
+|---|---|---|
+| `.hwpx` / `.docx` | 纯 Python 直接读写 | 无 |
+| `.hwp`（旧二进制） | 自动用本机 한글 转成 `.hwpx`，写回后再转回 `.hwp` | 本机 한글 |
+
+失败时工具返回 `{"ok": false, "code": "...", "hint": "...", "error": "..."}`，
+按 `code` 分支处理，不要解析 `error` 文本：
+
+| code | 含义 | 你要做什么 |
+|---|---|---|
+| `HANGUL_REQUIRED` | 处理 `.hwp` 但没有 본机 한글 | 告诉用户装 한글，或让他另存为 `.hwpx` |
+| `CONVERT_TIMEOUT` | 한글 转换超过 120 秒 | 请用户先用 한글 打开一次确认能打开 |
+| `UNSUPPORTED_FORMAT` | 不是 .hwp/.hwpx/.docx | 换文件，或另存为 .hwpx |
+| `NOT_FOUND` | 路径不存在 | 向用户确认路径 |
+| `BAD_MAP` | translations JSON 格式不对 | 用 `{"id": "译文"}` 重发 |
+| `EXTRACT_FAILED` / `APPLY_FAILED` | 读写失败 | 重新抽取一次再写回 |
