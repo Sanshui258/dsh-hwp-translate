@@ -1,7 +1,7 @@
 ---
 name: yeobaek-hwp
 description: 把韩文/英文的 HWP、HWPX（한글）文档翻成简体中文，保留原格式。当用户要求翻译 .hwp/.hwpx 文档，或提到 한글/Hangul/韩国公文/공문 时使用。翻译由你（当前模型）完成，不需要用户配任何 API Key。
-version: 0.3.3
+version: 0.4.0
 license: MIT
 homepage: https://github.com/Sanshui258/dsh-hwp-translate
 tools:
@@ -54,7 +54,7 @@ tools:
 
 ## 不要做的事
 
-- 不要调用 `hwp_translate`（旧接口，需要用户自己的 API Key）——优先 `hwp_extract` + `hwp_apply`；
+- 不要试图用别的 API/Key 翻译：本插件只走会话模型，没有自填 Key 的通道；
 - 不要修改用户原文件：`hwp_apply` 只写 `*_zh` 新文件；
 - `.hwp` 会自动转换，需要本机 한글；没有 한글 时返回 `HANGUL_REQUIRED`，不要重试；
 - 不要声称"已翻译"除非 `hwp_apply` 返回 `ok: true` 且 `output` 存在；

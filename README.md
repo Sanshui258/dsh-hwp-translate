@@ -3,8 +3,9 @@
 DSH 插件：把 `.hwp` / `.hwpx`（한글）文档翻成中文，**保留表格、项目符号、字号与缩进**，
 译文写在原文件旁边（`原名_zh.扩展名`）。
 
-**不需要任何 API Key**：翻译由当前会话的模型完成，插件只负责把文档读成 JSON、
-再把模型给的译文写回文件。两个步骤都在本机执行，不联网。
+**只能用宿主（会话）模型翻译，不提供任何自填 API 的通道**：插件只负责把文档读成
+JSON、再把模型给的译文写回文件。两个步骤都在本机执行，插件本身不发起网络请求，
+也不需要、不接受 API Key。
 
 ## 它能做什么、不能做什么
 
@@ -16,13 +17,12 @@ DSH 插件：把 `.hwp` / `.hwpx`（한글）文档翻成中文，**保留表格
 | 表格单元格、项目符号、缩进、字号跟随原文 | run 级富文本（粗体/上下标）目前会塌成首 run 的格式 |
 | 长文档分页抽取（默认每页 50 段，可调 1–200） | 参考文献/公式的专门跳过策略 |
 
-## 三个工具
+## 两个工具
 
 | 工具 | 参数 | 返回 | 联网 |
 |---|---|---|---|
 | `hwp_extract` | `path`、`offset?`、`limit?`、`allow_hangul?` | `{total, offset, next_offset, segments[], notice?}` | 否 |
 | `hwp_apply` | `path`、`translations`、`out_dir?`、`allow_hangul?` | `{ok, output, applied, skipped, missing[], notice?}` | 否 |
-| `hwp_translate` | `path`、`target?`、`out_dir?` | 旧接口，交给 exe 自己调 API | 是（需自带 Key） |
 
 `segments` 里每项：
 
@@ -121,13 +121,14 @@ dsh plugin --profile web remove dsh-hwp-translate
 - 仅 Windows；`.hwp` 需要本机 한글（`.hwpx` 不需要）；
 - 整段替换：run 级样式（粗体、上下标、混排字体）会塌成首个 run 的格式；
 - 长文档要分页抽取，单页默认 50 段；
-- 旧接口 `hwp_translate` 仍需用户自己的 API Key，仅为兼容保留；
+- 不提供「自己填 Key」的模式：必须由宿主（会话）模型翻译；
 - 许可证：本插件 MIT；随包翻译器为个人非商业使用许可。
 
 ## 版本记录
 
 | 版本 | 内容 |
 |---|---|
+| 0.4.0 | 移除自填 API 的旧接口：只允许宿主模型翻译 |
 | 0.3.3 | 한글 弹窗指引（点第二个「모두 허용」）、`HANGUL_DIALOG_TIMEOUT`、运行目录移出插件 |
 | 0.3.2 | `.hwp` 前必须显式同意（`allow_hangul`） |
 | 0.3.1 | `.hwp` 自动转换、结构化错误码、`.hwp` 进 `.hwp` 出 |
