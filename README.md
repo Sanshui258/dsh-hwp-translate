@@ -1,36 +1,103 @@
 # dsh-hwp-translate
 
-DSH 插件：把 `.hwp` / `.hwpx`（한글）文档翻成中文，**保留表格、项目符号与缩进**。
+DSH 插件：把 `.hwp` / `.hwpx`（한글）文档翻成中文，**保留表格、项目符号、字号与缩进**，
+译文写在原文件旁边（`原名_zh.扩展名`）。
 
-**不需要任何 API Key**：翻译由当前会话的模型完成，插件只负责本地抽取与写回。
+**不需要任何 API Key**：翻译由当前会话的模型完成，插件只负责把文档读成 JSON、
+再把模型给的译文写回文件。两个步骤都在本机执行，不联网。
+
+## 它能做什么、不能做什么
+
+| 能 | 不能 |
+|---|---|
+| `.hwpx`（韩文/英文）→ 中文，纯 Python 读写 | PPT / PDF / Excel（请用 Yeobaek 完整版） |
+| `.docx`（Word）→ 中文，保留样式 | 扫描件 / 图片里的文字（本插件不做 OCR） |
+| `.hwp`（旧二进制）→ 中文，经本机 한글 转换，输出仍是 `.hwp` | 加密文档（需先在 한글 里解密） |
+| 表格单元格、项目符号、缩进、字号跟随原文 | run 级富文本（粗体/上下标）目前会塌成首 run 的格式 |
+| 长文档分页抽取（默认每页 50 段，可调 1–200） | 参考文献/公式的专门跳过策略 |
 
 ## 三个工具
 
-| 工具 | 作用 | 联网 |
-|---|---|---|
-| `hwp_extract(path, offset?, limit?)` | 抽取待翻段落（id + 原文）；`.hwp` 自动转 `.hwpx` | 否 |
-| `hwp_apply(path, translations, out_dir?)` | 把 `{id: 译文}` 写回；`.hwp` 进则 `.hwp` 出 | 否 |
-| `hwp_translate(path, target?, out_dir?)` | 旧接口：让 exe 自己调 API（需自带 Key） | 是 |
+| 工具 | 参数 | 返回 | 联网 |
+|---|---|---|---|
+| `hwp_extract` | `path`、`offset?`、`limit?`、`allow_hangul?` | `{total, offset, next_offset, segments[], notice?}` | 否 |
+| `hwp_apply` | `path`、`translations`、`out_dir?`、`allow_hangul?` | `{ok, output, applied, skipped, missing[], notice?}` | 否 |
+| `hwp_translate` | `path`、`target?`、`out_dir?` | 旧接口，交给 exe 自己调 API | 是（需自带 Key） |
 
-## 典型用法（模型自动完成）
+`segments` 里每项：
+
+```json
+{"id": "4", "text": "교수님 성함", "kind": "cell", "in_table": true, "font_size": 10}
+```
+
+> `id` 是文档里的段落序号，写回时**原样带回**即可，不要自己重新编号。
+
+## 一次完整调用的样子
 
 ```
 用户：把 D:\资料\행정절차.hwpx 翻成中文
 
-1. hwp_extract → 4 段韩文
-2. 模型自己翻译成中文
-3. hwp_apply({"1": "专业体验活动照片", ...}) → 输出 D:\资料\행정절차_zh.hwpx
+1. hwp_extract(path)                → 4 段（id 1/2/4/8）
+2. 模型逐段翻译                       ← 用会话模型，不额外花钱配 Key
+3. hwp_apply(path, {"1": "…", "2": "…"})
+   → {"ok": true, "output": "…_zh.hwpx", "applied": 4, "missing": []}
 ```
 
-分页：`hwp_extract` 返回 `next_offset`，用它继续取下一页；
-写回后返回值里的 `missing` 是没交回的 id。
+分页：`next_offset` 不为 `null` 时，带 `offset=next_offset` 再取一页；
+`missing` 是没交回的 id，可以补翻后再 `hwp_apply` 一次（幂等：只替换交回的段落）。
 
-## 前置
+## 权限：操作 한글 前必须先问用户
 
-- **Windows**；
-- `.hwpx` / `.docx` 纯 Python，直接可用；
-- 旧版 `.hwp` 需要本机 한글(HWP)：工具会自动转 `.hwpx`、写完再转回 `.hwp`；没有 한글 返回 `HANGUL_REQUIRED`；
-- 不需要 API Key、不需要另装 Yeobaek——翻译器随包分发（`bin/HWP_Translator.exe`，16.8 MB）。
+`.hwp`（旧二进制）需要启动**本机 한글** 并通过 COM 打开文档，这属于「操作外部程序」：
+
+1. `hwp_extract` / `hwp_apply` 收到 `.hwp` 时，**必须带 `allow_hangul: true`**；
+2. 没带就返回 `{"ok": false, "code": "HANGUL_PERMISSION_REQUIRED"}`，不会静默启动 한글；
+3. agent 会先向你确认，再带这个参数重试。
+
+不想给这个权限：把文件另存为 `.hwpx`，纯 Python 读写，完全不需要 한글。
+
+## 한글 安全对话框（必须点第二个按钮）
+
+`.hwp` 触发本机 한글 时，会弹出「파일 접근」安全提示：
+
+```
+[접근 허용(Y)]  [모두 허용(N)]  [허용 안 함(A)]  [모두 안 함(C)]
+```
+
+请点**第二个「모두 허용」（N）**：
+
+- 点第一个只放行当前这一个文件，下一个文件（例如写回时的 `_zh.hwpx`）还会再弹；
+- 点后两个会直接失败；
+- 120 秒内没点，本次转换会被终止，返回 `HANGUL_DIALOG_TIMEOUT`（不是普通失败）。
+
+转换在**子进程**里执行，所以卡住的 한글 不会拖住 agent；超时后进程会被终止。
+成功返回里的 `notice` 会重复这个提醒。
+
+## 错误码
+
+失败一律返回 `{"ok": false, "code": "...", "hint": "...", "error": "..."}`：
+
+| code | 含义 | 处理 |
+|---|---|---|
+| `HANGUL_PERMISSION_REQUIRED` | 未获用户同意就处理 `.hwp` | 先问用户，同意后带 `allow_hangul: true` |
+| `HANGUL_DIALOG_TIMEOUT` | 한글 安全框 120 秒没人点 | 重试并点第二个「모두 허용」 |
+| `HANGUL_REQUIRED` | 本机没有 한글 | 装 한글，或改存 `.hwpx` |
+| `CONVERT_TIMEOUT` / `CONVERT_FAILED` | 转换失败 | 用 한글 手动打开确认文件正常 |
+| `UNSUPPORTED_FORMAT` | 不是 `.hwp/.hwpx/.docx` | 换文件或另存 |
+| `NOT_FOUND` | 路径不存在 | 确认路径 |
+| `BAD_MAP` | 译文 JSON 结构不对 | 用 `{"id": "译文"}` |
+| `EXTRACT_FAILED` / `APPLY_FAILED` | 读写失败 | 重新抽取后再写回 |
+
+## 运行目录与日志
+
+默认写到 `%LOCALAPPDATA%\Yeobaek\HWP-Tool`（可用环境变量 `YEOBAEK_HOME` 改）：
+
+```
+cache/translation_cache.db   # 旧接口的翻译缓存
+logs/ 、reports/             # 旧接口的运行日志与质量报告
+```
+
+这样插件目录保持只读，也避免 한글 对插件目录再弹一次权限框。
 
 ## 安装
 
@@ -40,46 +107,30 @@ DSH 插件：把 `.hwp` / `.hwpx`（한글）文档翻成中文，**保留表格
 dsh plugin --profile web add github:Sanshui258/dsh-hwp-translate
 ```
 
-## 离线命令行（不经 DSH 也能用）
+翻译器随包分发（`bin/HWP_Translator.exe`，16.8 MB，单文件），不需要另外安装 Yeobaek；
+也可以用 `YEOBAEK_CLI` 指向自己的构建。
+
+## 卸载
 
 ```sh
-HWP_Translator.exe --file 文档.hwpx --extract-json segments.json
-HWP_Translator.exe --file 文档.hwpx --apply-json translations.json --output-dir out
+dsh plugin --profile web remove dsh-hwp-translate
 ```
 
 ## 已知限制
 
-- 仅 Windows；`.hwpx` 纯 Python，`.hwp` 需要本机 한글；
-- 长文档要分页抽取（每页默认 50 段）；
+- 仅 Windows；`.hwp` 需要本机 한글（`.hwpx` 不需要）；
+- 整段替换：run 级样式（粗体、上下标、混排字体）会塌成首个 run 的格式；
+- 长文档要分页抽取，单页默认 50 段；
 - 旧接口 `hwp_translate` 仍需用户自己的 API Key，仅为兼容保留；
 - 许可证：本插件 MIT；随包翻译器为个人非商业使用许可。
 
-## 权限与 한글
+## 版本记录
 
-### 한글 安全对话框
-
-`.hwp` 触发本机 한글 时，会弹出「파일 접근」安全提示：
-
-```
-[접근 허용(Y)]  [모두 허용(N)]  [허용 안 함(A)]  [모두 안 함(C)]
-```
-
-请点**第二个「모두 허용」（N）**：只点第一个的话，每个文件都会再弹一次；
-点后两个会直接失败。如果 120 秒内没点，本次转换会被终止（`HANGUL_DIALOG_TIMEOUT`）。
-
-工具成功时会在返回里带 `notice` 提醒这一点。
-
-`.hwp`（旧二进制）需要启动本机 한글 并通过 COM 打开文档。这是「操作外部程序」，
-不是纯文件读写，所以：
-
-- 工具调用需要显式 `allow_hangul: true`（agent 会先向你确认）；
-- 未授权时返回 `HANGUL_PERMISSION_REQUIRED`，不会自行启动 한글；
-- 한글 首次可能弹出「允许外部程序访问」，请选择允许；
-- 不想给这个权限：把文件另存为 `.hwpx`，纯 Python 读写，无需 한글。
-
-## 错误码
-
-失败时返回 `{"ok": false, "code": "...", "hint": "...", "error": "..."}`：
-
-`HANGUL_REQUIRED`（缺 한글）、`HANGUL_DIALOG_TIMEOUT`（安全框没人点）、`CONVERT_TIMEOUT`（转换超 120s）、
-`UNSUPPORTED_FORMAT`、`NOT_FOUND`、`BAD_MAP`、`EXTRACT_FAILED`、`APPLY_FAILED`。
+| 版本 | 内容 |
+|---|---|
+| 0.3.3 | 한글 弹窗指引（点第二个「모두 허용」）、`HANGUL_DIALOG_TIMEOUT`、运行目录移出插件 |
+| 0.3.2 | `.hwp` 前必须显式同意（`allow_hangul`） |
+| 0.3.1 | `.hwp` 自动转换、结构化错误码、`.hwp` 进 `.hwp` 出 |
+| 0.3.0 | 零 Key：翻译改由会话模型完成（`extract` + `apply`） |
+| 0.2.0 | X1 离线抽取/写回 |
+| 0.1.0 | 首个版本（调用本机 Yeobaek CLI） |
