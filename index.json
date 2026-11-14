@@ -49,8 +49,8 @@
         "zh": "HWP / 한글 文档翻译"
       },
       "description": {
-        "en": "Translates .hwp/.hwpx (Hangul) and .docx into Chinese, keeping tables, bullets, indentation and font size, and writes *_zh beside the original. Two offline tools: hwp_extract returns segments as JSON (50 per page by default, 200 max, next_offset for pagination); hwp_apply takes {segment id: translation} and returns the output path with applied/missing. Translation must come from the calling session model: the plugin never calls an API and accepts no API key. Windows only: .hwpx/.docx are pure Python, legacy .hwp drives the installed Hangul over COM and requires allow_hangul.",
-        "zh": "把 .hwp/.hwpx（한글）与 .docx 翻成中文，保留表格、项目符号、缩进与字号，译文写在原文件旁（原名_zh）。两个离线工具：hwp_extract 返回段落 JSON（默认每页 50 段、上限 200，next_offset 分页）；hwp_apply 按 {段落 id: 译文} 写回，返回输出路径与 applied/missing。译文必须由调用方会话模型提供：插件不访问任何 API、也不接受 API Key。仅 Windows：.hwpx/.docx 纯 Python，旧版 .hwp 通过 COM 驱动本机 한글，需要 allow_hangul。"
+        "en": "Translates .hwp/.hwpx (Hangul) and .docx into any language the session model writes (Chinese is the common case), keeping tables, bullets, indentation and font size, and writes *_zh beside the original. Two offline tools: hwp_extract returns segments as JSON (50 per page by default, 200 max, next_offset for pagination); hwp_apply takes {segment id: translation} and returns the output path with applied/missing. Translation must come from the calling session model: the plugin never calls an API and accepts no API key. Windows only: .hwpx/.docx are pure Python, legacy .hwp drives the installed Hangul over COM and requires allow_hangul.",
+        "zh": "把 .hwp/.hwpx（한글）与 .docx 翻成会话模型能写的任意语言（中文是最常见的目标），保留表格、项目符号、缩进与字号，译文写在原文件旁（原名_zh）。两个离线工具：hwp_extract 返回段落 JSON（默认每页 50 段、上限 200，next_offset 分页）；hwp_apply 按 {段落 id: 译文} 写回，返回输出路径与 applied/missing。译文必须由调用方会话模型提供：插件不访问任何 API、也不接受 API Key。仅 Windows：.hwpx/.docx 纯 Python，旧版 .hwp 通过 COM 驱动本机 한글，需要 allow_hangul。"
       },
       "icon": "icon.png",
       "repository": {
@@ -63,17 +63,17 @@
           "windows"
         ],
         "sortKeys": {
-          "updated": 1794623668
+          "updated": 1794624769
         }
       },
       "versions": [
         {
-          "version": "0.4.1",
-          "publishTimestamp": 1794623668,
+          "version": "0.4.2",
+          "publishTimestamp": 1794624769,
           "source": {
             "type": "git",
             "url": "https://github.com/Sanshui258/dsh-hwp-translate.git",
-            "commit": "24ae8c88a26c320ffe640afdc3d76b9c25d34e46"
+            "commit": "3116172109e1bc190bb3a88f9200e77690b15549"
           }
         }
       ]
