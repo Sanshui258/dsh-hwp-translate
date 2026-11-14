@@ -1,6 +1,6 @@
 {
   "name": "dsh-hwp-translate",
-  "version": "0.4.0",
+  "version": "0.4.1",
   "description": "Translate HWP/HWPX (한글) documents into Chinese with layout preserved. Ships the 14 MB Yeobaek translator, so no separate install is needed.",
   "type": "module",
   "main": "lib/index.js",
