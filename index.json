@@ -49,8 +49,8 @@
         "zh": "HWP / 한글 文档翻译"
       },
       "description": {
-        "en": "Translates .hwp/.hwpx (Hangul) documents into Chinese with layout preserved. No API key: the session model translates, the plugin only extracts and writes back.",
-        "zh": "把 .hwp/.hwpx（한글）文档翻成中文并保留原格式。不需要 API Key：由会话模型翻译，插件只负责抽取与写回。"
+        "en": "Translates .hwp/.hwpx (Hangul) and .docx into Chinese, keeping tables, bullets, indentation and font size, and writes *_zh beside the original. Two offline tools: hwp_extract returns segments as JSON (50 per page by default, 200 max, next_offset for pagination); hwp_apply takes {segment id: translation} and returns the output path with applied/missing. Translation must come from the calling session model: the plugin never calls an API and accepts no API key. Windows only: .hwpx/.docx are pure Python, legacy .hwp drives the installed Hangul over COM and requires allow_hangul.",
+        "zh": "把 .hwp/.hwpx（한글）与 .docx 翻成中文，保留表格、项目符号、缩进与字号，译文写在原文件旁（原名_zh）。两个离线工具：hwp_extract 返回段落 JSON（默认每页 50 段、上限 200，next_offset 分页）；hwp_apply 按 {段落 id: 译文} 写回，返回输出路径与 applied/missing。译文必须由调用方会话模型提供：插件不访问任何 API、也不接受 API Key。仅 Windows：.hwpx/.docx 纯 Python，旧版 .hwp 通过 COM 驱动本机 한글，需要 allow_hangul。"
       },
       "icon": "icon.png",
       "repository": {
@@ -63,17 +63,17 @@
           "windows"
         ],
         "sortKeys": {
-          "updated": 1794623157
+          "updated": 1794623559
         }
       },
       "versions": [
         {
-          "version": "0.3.3",
-          "publishTimestamp": 1794623157,
+          "version": "0.4.0",
+          "publishTimestamp": 1794623559,
           "source": {
             "type": "git",
             "url": "https://github.com/Sanshui258/dsh-hwp-translate.git",
-            "commit": "38f2ad061951aaf4695460e95729ca230c7e24d7"
+            "commit": "c920b8adf47c57fd2cae2435552e136a68d96d92"
           }
         }
       ]
