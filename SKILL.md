@@ -1,7 +1,7 @@
 ---
 name: yeobaek-hwp
 description: 把韩文/英文的 HWP、HWPX（한글）文档翻成简体中文，保留原格式。当用户要求翻译 .hwp/.hwpx 文档，或提到 한글/Hangul/韩国公文/공문 时使用。翻译由你（当前模型）完成，不需要用户配任何 API Key。
-version: 0.4.2
+version: 0.4.3
 license: MIT
 homepage: https://github.com/Sanshui258/dsh-hwp-translate
 tools:
@@ -10,6 +10,22 @@ tools:
 ---
 
 # Yeobaek HWP Translator
+
+## 开工前：先确认语言方向（只问一次）
+
+用户第一次让你处理文档、且**没有说明语言方向**时，先问一句再动手：
+
+> 这份文档要翻成什么语言？不指定就按「原文语言 → 中文」处理；
+> 也可以直接说「从韩文翻成英文」这样的完整方向。
+
+规则：
+
+- 用户已经说了方向（"翻成英文"、"韩翻中"）→ **不要再问**，直接做；
+- 用户只给目标语言 → 源语言就是文档自身的语言，不要追问源语言；
+- 用户说「不用问，直接中文」→ 本会话后续同类任务不再问；
+- 把方向记录到调用里（`source_language` / `target_language`），它们只回显、不改变读写。
+
+详细的交互示例见仓库根目录 `TUTORIAL.md`。
 
 ## 什么时候用
 
